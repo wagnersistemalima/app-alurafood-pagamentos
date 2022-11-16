@@ -3,6 +3,7 @@ package br.com.sistemalima.pagamentos.controller;
 import br.com.sistemalima.pagamentos.dto.PagamentoRequestDTO;
 import br.com.sistemalima.pagamentos.dto.PagamentoResponseDTO;
 import br.com.sistemalima.pagamentos.dto.PagamentoUpdateRequestDTO;
+import br.com.sistemalima.pagamentos.mapper.ObservabilidadeMapper;
 import br.com.sistemalima.pagamentos.mapper.PagamentoRequestMapper;
 import br.com.sistemalima.pagamentos.model.Observabilidade;
 import br.com.sistemalima.pagamentos.model.Pagamento;
@@ -22,6 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 
@@ -36,12 +38,16 @@ public class PagamentoController {
     @Autowired
     private PagamentoRequestMapper pagamentoRequestMapper;
 
+    @Autowired
+    private ObservabilidadeMapper observabilidadeMapper;
+
     private final Logger logger = LoggerFactory.getLogger(PagamentoController.class);
     private final static String listarPagamento = "listar todos pagamento";
     private final static String detalharPagamento = "Detalhar pagamento por id";
     private final static String cadastrarPagamento = "Cadastrar um pagamento";
     private final static String atualizarPagamento = "Atualizar um pagamento";
     private final static String cancelarPagamento = "Cancelar um pagamento";
+    private final static String confirmarPagamento = "confirmando um pagamento";
     private final static String tagStart = "Inicio do processo, class: PagamentoController, ";
     private final static String tagEnd = "Fim do processo, class: PagamentoController, ";
 
@@ -53,7 +59,7 @@ public class PagamentoController {
 
         String correlationId = UUID.randomUUID().toString();
 
-        Observabilidade observabilidade = new Observabilidade(version, requestId, listarPagamento, correlationId);
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
 
         logger.info(String.format(tagStart + observabilidade));
 
@@ -72,7 +78,7 @@ public class PagamentoController {
 
         String correlationId = UUID.randomUUID().toString();
 
-        Observabilidade observabilidade = new Observabilidade(version, requestId, detalharPagamento, correlationId);
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
 
         logger.info(tagStart + observabilidade);
 
@@ -91,7 +97,7 @@ public class PagamentoController {
 
         String correlationId = UUID.randomUUID().toString();
 
-        Observabilidade observabilidade = new Observabilidade(version, requestId, cadastrarPagamento, correlationId);
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
 
         logger.info(String.format(tagStart + observabilidade));
 
@@ -115,7 +121,7 @@ public class PagamentoController {
 
         String correlationId = UUID.randomUUID().toString();
 
-        Observabilidade observabilidade = new Observabilidade(version, requestId, atualizarPagamento, correlationId);
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
 
         logger.info(String.format(tagStart + observabilidade));
 
@@ -135,7 +141,7 @@ public class PagamentoController {
 
         String correlationId = UUID.randomUUID().toString();
 
-        Observabilidade observabilidade = new Observabilidade(version, requestId, cancelarPagamento, correlationId);
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
 
         logger.info(String.format(tagStart + observabilidade));
 
@@ -144,6 +150,26 @@ public class PagamentoController {
         logger.info(tagEnd + observabilidade);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/confirmar")
+    public ResponseEntity<Void> confirmar(
+            @RequestHeader("Accept-Version") @NotEmpty(message = "informe o cabeçalho") String version,
+            @RequestHeader("x-requestId") @NotEmpty(message = "informe o cabeçalho") String requestId,
+            @PathVariable @NotNull Long id) throws IOException {
+
+        String correlationId = UUID.randomUUID().toString();
+
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
+
+        logger.info(String.format(tagStart + observabilidade));
+
+        pagamentoService.confirmaPagamento(id, observabilidade, version, requestId);
+
+        logger.info(String.format(tagEnd + observabilidade));
+
+        return ResponseEntity.ok().build();
+
     }
 
 }

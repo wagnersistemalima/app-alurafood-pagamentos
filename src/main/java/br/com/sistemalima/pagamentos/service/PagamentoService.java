@@ -1,11 +1,14 @@
 package br.com.sistemalima.pagamentos.service;
 
 import br.com.sistemalima.pagamentos.dto.PagamentoResponseDTO;
+import br.com.sistemalima.pagamentos.exceptions.BadRequestExceptions;
+import br.com.sistemalima.pagamentos.http.PedidoClient;
 import br.com.sistemalima.pagamentos.mapper.PagamentoResponseMapper;
 import br.com.sistemalima.pagamentos.model.Observabilidade;
 import br.com.sistemalima.pagamentos.model.Pagamento;
 import br.com.sistemalima.pagamentos.model.Status;
 import br.com.sistemalima.pagamentos.repository.PagamentoRepository;
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +16,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -25,6 +31,9 @@ public class PagamentoService {
 
     @Autowired
     private PagamentoResponseMapper pagamentoResponseMapper;
+
+    @Autowired
+    private PedidoClient pedidoClient;
 
     private final Logger logger = LoggerFactory.getLogger(PagamentoService.class);
     private static final String tag = "class: PagamentoService, ";
@@ -79,6 +88,28 @@ public class PagamentoService {
         validaIdPagamento(id, observabilidade);
 
         pagamentoRepository.deleteById(id);
+    }
+    @Transactional
+    public void confirmaPagamento(Long id, Observabilidade observabilidade, String version, String requestId) throws IOException {
+
+        logger.info(String.format(tag + observabilidade));
+
+        Pagamento pagamento = validaIdPagamento(id, observabilidade);
+
+
+        try {
+            pedidoClient.atualizaPagamento(version, requestId, pagamento.getPedidoId());
+            pagamento.setStatus(Status.CONFIRMADO);
+            pagamentoRepository.save(pagamento);
+        } catch (FeignException ex) {
+            if (ex.status() == 404) {
+                throw new EntityNotFoundException(ex.getMessage());
+            } else if (ex.status() == 400) {
+                throw new BadRequestExceptions((ex.getMessage()));
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
     }
 
     private Pagamento validaIdPagamento(Long id, Observabilidade observabilidade) {
