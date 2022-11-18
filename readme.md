@@ -13,7 +13,7 @@
 | :fire: Desafio     | https://7daysofcode.io/matricula/java
 
 <!-- Inserir imagem com a #vitrinedev ao final do link -->
-![alter-text](https://cursos.alura.com.br/vitrinedev/wagner-sistemalima#vitrinedev)
+![alter-text](./images/ms-vitrine.png)
 
 
 ## Setup do Projeto
