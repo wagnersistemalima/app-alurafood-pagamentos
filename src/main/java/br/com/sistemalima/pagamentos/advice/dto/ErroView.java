@@ -1,4 +1,4 @@
-package br.com.sistemalima.pagamentos.dto;
+package br.com.sistemalima.pagamentos.advice.dto;
 
 import java.time.LocalDateTime;
 

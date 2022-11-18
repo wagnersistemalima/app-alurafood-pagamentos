@@ -9,6 +9,7 @@ import br.com.sistemalima.pagamentos.model.Observabilidade;
 import br.com.sistemalima.pagamentos.model.Pagamento;
 import br.com.sistemalima.pagamentos.model.Status;
 import br.com.sistemalima.pagamentos.service.PagamentoService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +79,7 @@ public class PagamentoController {
 
         String correlationId = UUID.randomUUID().toString();
 
-        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, detalharPagamento, correlationId);
 
         logger.info(tagStart + observabilidade);
 
@@ -97,7 +98,7 @@ public class PagamentoController {
 
         String correlationId = UUID.randomUUID().toString();
 
-        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, cadastrarPagamento, correlationId);
 
         logger.info(String.format(tagStart + observabilidade));
 
@@ -121,7 +122,7 @@ public class PagamentoController {
 
         String correlationId = UUID.randomUUID().toString();
 
-        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, atualizarPagamento, correlationId);
 
         logger.info(String.format(tagStart + observabilidade));
 
@@ -141,7 +142,7 @@ public class PagamentoController {
 
         String correlationId = UUID.randomUUID().toString();
 
-        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, cancelarPagamento, correlationId);
 
         logger.info(String.format(tagStart + observabilidade));
 
@@ -153,6 +154,7 @@ public class PagamentoController {
     }
 
     @PatchMapping("/{id}/confirmar")
+    @CircuitBreaker(name = "atualizaPedido", fallbackMethod = "pagamentoAutorizadoComIntegracaoPendente")
     public ResponseEntity<Void> confirmar(
             @RequestHeader("Accept-Version") @NotEmpty(message = "informe o cabeçalho") String version,
             @RequestHeader("x-requestId") @NotEmpty(message = "informe o cabeçalho") String requestId,
@@ -160,7 +162,7 @@ public class PagamentoController {
 
         String correlationId = UUID.randomUUID().toString();
 
-        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, listarPagamento, correlationId);
+        Observabilidade observabilidade = observabilidadeMapper.map(version, requestId, confirmarPagamento, correlationId);
 
         logger.info(String.format(tagStart + observabilidade));
 
@@ -170,6 +172,16 @@ public class PagamentoController {
 
         return ResponseEntity.ok().build();
 
+    }
+
+    public ResponseEntity<Void> pagamentoAutorizadoComIntegracaoPendente(String version, String requestId, Long id, Exception exception) {
+
+        String correlationId = UUID.randomUUID().toString();
+        Observabilidade observabilidade = new Observabilidade(version, requestId, confirmarPagamento, correlationId);
+        logger.info(String.format("method: fallback pagamentoAutorizadoComIntegracaoPendente, " + tagStart + observabilidade));
+        pagamentoService.alteraStatus(id, observabilidade);
+        logger.info(String.format("method: fallback pagamentoAutorizadoComIntegracaoPendente, " + tagEnd + observabilidade));
+        return ResponseEntity.ok().build();
     }
 
 }

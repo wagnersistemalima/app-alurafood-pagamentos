@@ -1,6 +1,6 @@
 package br.com.sistemalima.pagamentos.advice;
 
-import br.com.sistemalima.pagamentos.dto.ErroView;
+import br.com.sistemalima.pagamentos.advice.dto.ErroView;
 import br.com.sistemalima.pagamentos.exceptions.BadRequestExceptions;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -53,7 +53,7 @@ public class ResourceExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErroView handlerEntityException(Exception exception, HttpServletRequest request) {
+    public ErroView handlerException(Exception exception, HttpServletRequest request) {
         return new ErroView(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

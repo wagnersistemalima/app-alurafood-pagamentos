@@ -16,8 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
@@ -123,4 +121,10 @@ public class PagamentoService {
         return pagamento.get();
     }
 
+    public void alteraStatus(Long id, Observabilidade observabilidade) {
+        logger.info(String.format(tag + observabilidade));
+        Pagamento pagamento = validaIdPagamento(id, observabilidade);
+        pagamento.setStatus(Status.CONFIRMADO_SEM_INTEGRACAO);
+        pagamentoRepository.save(pagamento);
+    }
 }
