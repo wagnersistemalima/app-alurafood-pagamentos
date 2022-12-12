@@ -30,3 +30,25 @@
 * Spring Cloud OpenFeign: Uma maneira elegante de criar clientes HTTP em Java
 * JPA : biblioteca padrão de persistência de dados no java, baseado no mapeamento objeto relacional
 * Banco de dados MySQL
+* Protocolo AMQP: é a sigla para Advanced Messaging Queue Protocol, e é o protocolo base no qual foi construído o RabbitMQ.
+* Spring AMQP: O projeto Spring AMQP aplica os principais conceitos do Spring ao desenvolvimento de soluções de mensagens baseadas em AMQP. Fornecemos um “modelo” como uma abstração de alto nível para enviar e receber mensagens. Também fornecemos suporte para POJOs orientados a mensagens. Essas bibliotecas facilitam o gerenciamento de recursos AMQP enquanto promovem o uso de injeção de dependência e configuração declarativa. Em todos esses casos, você pode ver semelhanças com o suporte JMS no Spring Framework
+
+## Mensagerias
+
+* Mensageria é uma técnica de comunicação assíncrona entre as aplicações.
+* Evitamos o acoplamento entre as partes colocando uma camada intermediária, que é o nosso message broker.
+* Esse message broker pode fazer armazenamento, enfileiramento, filtragem e roteamento de mensagens.
+
+## Spring AMQP
+
+* Possui bibliotecas que facilitam a implementação da comunicação baseada em protocolo AMQP.
+* Ele é dividido em duas partes: spring-amqp, que é a abstração base para a comunicação, e spring-rabbit, com implementações mais específicas para o RabbitMQ.
+* Ao utilizarmos a dependência spring-boot-starter-amqp no nosso arquivo pom.xml, já temos essas duas dependências encapsuladas, característica padrão quando utilizamos os starters do Spring Boot.
+* https://spring.io/projects/spring-amqp
+
+## RabbitMQ
+* https://www.rabbitmq.com/
+* Server do RabbitMQ, responsável pela administração, como controlar as filas, as exchanges, entre outras funcionalidades.
+* É o agente de mensagens de código aberto mais amplamente implantado.
+
+![alter-text](./images/rabbitMQ-produces.png)

@@ -12,6 +12,8 @@ import br.com.sistemalima.pagamentos.service.PagamentoService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +43,9 @@ public class PagamentoController {
 
     @Autowired
     private ObservabilidadeMapper observabilidadeMapper;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     private final Logger logger = LoggerFactory.getLogger(PagamentoController.class);
     private final static String listarPagamento = "listar todos pagamento";
@@ -109,6 +114,11 @@ public class PagamentoController {
         URI uri = uriBuilder.path("/pagamentos/{id}").buildAndExpand(pagamentoResponseDTO.getId()).toUri();
 
         logger.info(tagEnd + observabilidade);
+
+
+        // envio dos dados do pagamento para a exange fanaut onde o microsserviço de pedido vai ler o evento
+        // usando o conversor json Jackson2JsonMessageConverter
+        rabbitTemplate.convertAndSend("pagamento.ex","", pagamentoResponseDTO);
 
         return ResponseEntity.created(uri).body(pagamentoResponseDTO);
     }
